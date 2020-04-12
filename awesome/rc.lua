@@ -94,6 +94,7 @@ awful.layout.layouts = {
 -- Autostart commands
 awful.spawn('nm-applet')
 awful.spawn('autorandr --change')
+awful.spawn('flameshot')
 
 -- {{{ Menu
 -- Create a launcher widget and a main menu
@@ -595,8 +596,16 @@ globalkeys = gears.table.join(globalkeys,
 
     awful.key({ "Shift", "Mod1" }, "p", function ()
         awful.util.spawn("rofi-pass") end,
-	{ description = "Show pass selection menu", group = "Password" })
-    
+	{ description = "Show pass selection menu", group = "Password" }),
+
+    awful.key({ }, "Print", function ()
+        awful.util.spawn("flameshot gui") end,
+	{ description = "Show screenshot tool gui", group = "Screen" }),
+
+    awful.key({ "Shift" }, "Print", function ()
+        awful.util.spawn("gnome-screenshot -i") end,
+	{ description = "Show Gnome screenshot tool gui", group = "Screen" })
+	
 )
 
 -- Logic for laptop + external monitor setup
