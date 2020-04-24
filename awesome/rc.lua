@@ -592,20 +592,27 @@ globalkeys = gears.table.join(globalkeys,
 	{ description = "Mute mic", group = "audio" }),
     awful.key({ "Shift", "Mod1" }, "v", function ()
         awful.util.spawn("rofi -modi \"clipboard:greenclip print\" -show clipboard -run-command '{cmd}'") end,
-	{ description = "Show clipboard selection menu", group = "Clipboard" }),
+	{ description = "Show clipboard selection menu", group = "clipboard" }),
 
     awful.key({ "Shift", "Mod1" }, "p", function ()
         awful.util.spawn("rofi-pass") end,
-	{ description = "Show pass selection menu", group = "Password" }),
+	{ description = "Show pass selection menu", group = "password" }),
 
     awful.key({ }, "Print", function ()
         awful.util.spawn("flameshot gui") end,
-	{ description = "Show screenshot tool gui", group = "Screen" }),
+	{ description = "Show screenshot tool gui", group = "screen" }),
 
     awful.key({ "Shift" }, "Print", function ()
         awful.util.spawn("gnome-screenshot -i") end,
-	{ description = "Show Gnome screenshot tool gui", group = "Screen" })
+	{ description = "Show Gnome screenshot tool gui", group = "screen" }),
 	
+    awful.key({ modkey, "Control" }, "d", function ()
+        awful.util.spawn("xrandr --output eDP1 --off") end,
+	{ description = "Disable laptop screen", group = "screen" }),
+
+    awful.key({ modkey, "Control", "Shift" }, "d", function ()
+        awful.util.spawn("autorandr --change") end,
+	{ description = "Restore correct full displays layout (run autorandr)", group = "screen" })
 )
 
 -- Logic for laptop + external monitor setup
