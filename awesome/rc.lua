@@ -8,6 +8,7 @@ local awful = require("awful")
 require("awful.autofocus")
 -- Widget and layout library
 local wibox = require("wibox")
+local battery = require("power_widget")
 -- Theme handling library
 local beautiful = require("beautiful")
 -- Notification library
@@ -125,6 +126,17 @@ mylauncher = awful.widget.launcher({
     menu = mymainmenu
 })
 
+--power.warning_config = {
+--  percentage = 10,
+--  message = "The battery is getting low",
+--  preset = {
+--    shape = gears.shape.rounded_rect,
+--    timeout = 12,
+--    bg = "#FFFF00",
+--    fg = "#000000",
+--  },
+--}
+
 -- Menubar configuration
 menubar.utils.terminal = terminal -- Set the terminal for applications that require it
 -- }}}
@@ -138,6 +150,8 @@ end)
 -- {{{ Wibar
 -- Create a textclock widget
 mytextclock = wibox.widget.textclock()
+
+mybattery = battery.get_widget(wibox, "BAT1")
 
 -- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(awful.button({}, 1, function(t)
@@ -268,7 +282,8 @@ awful.screen.connect_for_each_screen(function(s)
             layout = wibox.layout.fixed.horizontal,
             mykeyboardlayout,
             wibox.widget.systray(),
-            mytextclock,
+            mybattery,
+	    mytextclock,
             s.mylayoutbox,
         },
     }
