@@ -15,7 +15,9 @@ set $term kitty
 # Note: it's recommended that you pass the final command to sway
 set $menu rofi -show drun
 
-set $laptop 'Chimei Innolux Corporation 0x15E8 0x00000000'
+#set $laptop 'Chimei Innolux Corporation 0x15E8 0x00000000'
+set $laptop eDP-1
+
 
 ### Output configuration
 #
@@ -57,7 +59,14 @@ bindsym $mod+Ctrl+l exec swaylock -f -c 000000
 #
 #
   
-input "1267:12370:ELAN0651:00_04F3:3052_Touchpad" {
+#input "1267:12370:ELAN0651:00_04F3:3052_Touchpad" {
+#       dwt enabled
+#       tap enabled
+#       natural_scroll enabled
+#       middle_emulation enabled
+#}
+  
+input "1739:0:Synaptics_TM3276-022" {
        dwt enabled
        tap enabled
        natural_scroll enabled
@@ -85,13 +94,13 @@ bindsym --to-code {
     $mod+Return exec $term
     
     # kill focused window
-    $mod+Shift+q kill
+    $mod+Shift+c kill
 
     # start your launcher
     $mod+d exec $menu
 
     # reload the configuration file
-    $mod+Shift+c reload
+    $mod+Shift+q reload
 
     # exit sway (logs you out of your Wayland session)
     $mod+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -b 'Yes, exit sway' 'swaymsg exit'
@@ -138,7 +147,10 @@ bindsym --to-code {
 
     #$mod+m exec clipman --selector="rofi" -s
     #$mod+m exec tac ~/.clipboard-history | rofi -dmenu | wl-copy
-    $mod+m exec clipman pick -t rofi
+    #Shift+Alt+v exec clipman pick -t rofi
+    Shift+Alt+v exec tac ~/.clipboard | rofi -dmenu | wl-copy -n
+
+    Shift+Alt+p exec rofi-pass
 }
     # Drag floating windows by holding down $mod and left mouse button.
     # Resize them with right mouse button + $mod.
@@ -282,8 +294,12 @@ mode "resize" {
 # Screenshots via grim and slurp
 #
 
-bindsym $mod+Print exec grim -o $(swaymsg -t get_outputs | jq -r '.[] | select(.focused) | .name') /home/andrei/Pictures/$(date +'%Y-%m-%d-%H%M%S_grim.png')
-bindsym $mod+Shift+Print exec grim -g "$(slurp)" /home/andrei/Pictures/$(date +'%Y-%m-%d-%H%M%S_grim.png')
+#bindsym $mod+Print exec grim -o $(swaymsg -t get_outputs | jq -r '.[] | select(.focused) | .name') /home/andrei/Pictures/$(date +'%Y-%m-%d-%H%M%S_grim.png')
+#bindsym $mod+Shift+Print exec grim -g "$(slurp)" /home/andrei/Pictures/$(date +'%Y-%m-%d-%H%M%S_grim.png')
+#
+
+bindsym $mod+Print exec grim -g "$(slurp)" - | swappy -f -
+bindsym Print exec grim -g "$(swaymsg -t get_tree | jq -r '.. | select(.pid? and .visible?) | .rect | "\(.x),\(.y) \(.width)x\(.height)"' | slurp)" - | swappy -f -
 
 #
 # Additional keys
@@ -336,10 +352,9 @@ for_window [floating] border none
 #for_window [class="Feh"] border pixel 0
 
 exec mako --anchor top-right
-exec_always redshift -t 6000:2500
-#exec clipman -d
-#exec_always wl-paste -w wl-paste -p >> ~/.clipboard-history
-exec wl-paste -t text --watch clipman store
+exec gammastep -t 6000:2500
+exec_always wl-paste -w wl-paste >> ~/.clipboard
+#exec wl-paste -t text --watch clipman store
 
 # Autohide mouse pointer after
 seat * hide_cursor 4000
@@ -349,7 +364,15 @@ set $gnome-schema org.gnome.desktop.interface
 
 exec_always {
     gsettings set $gnome-schema gtk-theme 'Adwaita-dark'
-    gsettings set $gnome-schema cursor-theme 'Adwaita'
+    gsettings set $gnome-schema cursor-theme 'DMZ-Black'
 }
+
+# class 		 border|background|text|indicator|child_border
+client.background                  #8800ff
+client.focused  	 #79008f   #79008f   #ffffff   #2e9ef4   #ac47ff  	
+client.focused_inactive  #333333   #5f676a   #ffffff   #484e50   #5f676a
+client.unfocused         #333333   #222222   #888888   #292d2e   #222222
+client.urgent            #2f343a   #900000   #ffffff   #900000   #900000
+client.placeholder       #000000   #0c0c0c   #ffffff   #000000   #0c0c0c
 
 include /etc/sway/config.d/*
