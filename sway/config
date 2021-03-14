@@ -15,7 +15,6 @@ set $term kitty
 # Note: it's recommended that you pass the final command to sway
 set $menu rofi -show drun
 
-#set $laptop 'Chimei Innolux Corporation 0x15E8 0x00000000'
 set $laptop eDP-1
 
 
@@ -59,13 +58,13 @@ bindsym $mod+Ctrl+l exec swaylock -f -c 000000
 #
 #
   
-#input "1267:12370:ELAN0651:00_04F3:3052_Touchpad" {
-#       dwt enabled
-#       tap enabled
-#       natural_scroll enabled
-#       middle_emulation enabled
-#}
-  
+input "1267:12370:ELAN0651:00_04F3:3052_Touchpad" {
+       dwt enabled
+       tap enabled
+       natural_scroll enabled
+       middle_emulation enabled
+}
+
 input "1739:0:Synaptics_TM3276-022" {
        dwt enabled
        tap enabled
@@ -312,8 +311,8 @@ bindsym XF86AudioMute exec pactl set-sink-mute @DEFAULT_SINK@ toggle
 bindsym XF86AudioMicMute exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
 
 # Media player controls
-bindsym XF86AudioPlay exec playerctl play
-bindsym XF86AudioPause exec playerctl pause
+bindsym XF86AudioPlay exec playerctl play-pause
+#bindsym XF86AudioPause exec playerctl pause
 bindsym XF86AudioNext exec playerctl next
 bindsym XF86AudioPrev exec playerctl previous
 
