@@ -151,7 +151,7 @@ end)
 -- Create a textclock widget
 mytextclock = wibox.widget.textclock()
 
-mybattery = battery.get_widget(wibox, "BAT1")
+mybattery = battery.get_widget(wibox, "BAT0")
 
 -- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(awful.button({}, 1, function(t)
@@ -593,16 +593,16 @@ globalkeys = gears.table.join(globalkeys,
         awful.util.spawn("light -A 5") end,
 	{ description = "Brightness up", group = "screen" }),
     awful.key({ }, "XF86AudioRaiseVolume", function ()
-        awful.util.spawn("pactl set-sink-volume @DEFAULT_SINK@ +5%") end,
+        awful.util.spawn("pamixer -i 5") end,
 	{ description = "Volume up", group = "audio" }),
     awful.key({ }, "XF86AudioLowerVolume", function ()
-        awful.util.spawn("pactl set-sink-volume @DEFAULT_SINK@ -5%") end,
+        awful.util.spawn("pamixer -d 5") end,
 	{ description = "Volume down", group = "audio" }),
     awful.key({ }, "XF86AudioMute", function ()
-        awful.util.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle") end,
+        awful.util.spawn("pamixer -t") end,
 	{ description = "Mute audio", group = "audio" }),
     awful.key({ }, "XF86AudioMicMute", function ()
-        awful.util.spawn("pactl set-source-mute @DEFAULT_SOURCE@ toggle") end,
+        awful.util.spawn("pamixer --default-source -t") end,
 	{ description = "Mute mic", group = "audio" }),
 	
     awful.key({ }, "XF86AudioPlay", function ()
@@ -633,7 +633,7 @@ globalkeys = gears.table.join(globalkeys,
 	{ description = "Show Gnome screenshot tool gui", group = "screen" }),
 	
     awful.key({ modkey, "Control" }, "d", function ()
-        awful.util.spawn("xrandr --output eDP1 --off") end,
+        awful.util.spawn("xrandr --output DP-2 --off") end,
 	{ description = "Disable laptop screen", group = "screen" }),
 
     awful.key({ modkey, "Control", "Shift" }, "d", function ()
