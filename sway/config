@@ -34,6 +34,11 @@ output DP-1 position 0 0 resolution 2560x1440
 output $laptop position 0 1440 resolution 1920x1080
 #output $laptop position 0 1310 resolution 1920x1080
 
+bindswitch --reload --locked lid:on output $laptop disable
+bindswitch --reload --locked lid:off output $laptop enable
+
+exec_always /etc/sway/laptop_lid_check.sh
+
 #
 # You can get the names of your outputs by running: swaymsg -t get_outputs
 #
@@ -58,24 +63,18 @@ bindsym $mod+Ctrl+l exec swaylock -f -c 000000
 #
 #
   
-input "1267:12370:ELAN0651:00_04F3:3052_Touchpad" {
+exec_always swaymsg input "1739:32552:MSFT0001:00_06CB:7F28_Touchpad" {
        dwt enabled
        tap enabled
        natural_scroll enabled
        middle_emulation enabled
 }
 
-input "1739:0:Synaptics_TM3276-022" {
-       dwt enabled
-       tap enabled
-       natural_scroll enabled
-       middle_emulation enabled
-}
 
-input "1:1:AT_Translated_Set_2_keyboard" {
-       xkb_layout us,de,ru
-       xkb_options grp:alt_space_toggle
-}
+exec_always swaymsg input '*' xkb_options grp:alt_space_toggle
+
+input "1133:16522:Logitech_MX_Keys" xkb_layout us,de,ru
+input "1:2:AT_Raw_Set_2_keyboard" xkb_layout us,de,ru
 
 #
 # Read `man 5 sway-input` for more information about this section.
@@ -99,7 +98,7 @@ bindsym --to-code {
     $mod+d exec $menu
 
     # reload the configuration file
-    $mod+Shift+q reload
+    $mod+Shift+r reload
 
     # exit sway (logs you out of your Wayland session)
     $mod+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -b 'Yes, exit sway' 'swaymsg exit'
@@ -146,8 +145,8 @@ bindsym --to-code {
 
     #$mod+m exec clipman --selector="rofi" -s
     #$mod+m exec tac ~/.clipboard-history | rofi -dmenu | wl-copy
-    #Shift+Alt+v exec clipman pick -t rofi
-    Shift+Alt+v exec tac ~/.clipboard | rofi -dmenu | wl-copy -n
+    Shift+Alt+v exec clipman pick -t rofi
+    #Shift+Alt+v exec tac ~/.clipboard | rofi -dmenu | wl-copy -n
 
     Shift+Alt+p exec rofi-pass
 }
@@ -298,17 +297,19 @@ mode "resize" {
 #
 
 bindsym $mod+Print exec grim -g "$(slurp)" - | swappy -f -
-bindsym Print exec grim -g "$(swaymsg -t get_tree | jq -r '.. | select(.pid? and .visible?) | .rect | "\(.x),\(.y) \(.width)x\(.height)"' | slurp)" - | swappy -f -
+#bindsym Print exec grim -g "$(swaymsg -t get_tree | jq -r '.. | select(.pid? and .visible?) | .rect | "\(.x),\(.y) \(.width)x\(.height)"' | slurp)" - | swappy -f -
+bindsym Print exec flameshot gui
+
 
 #
 # Additional keys
 #
 bindsym XF86MonBrightnessUp exec light -A 5
 bindsym XF86MonBrightnessDown exec light -U 5
-bindsym XF86AudioRaiseVolume exec pactl set-sink-volume @DEFAULT_SINK@ +5%
-bindsym XF86AudioLowerVolume exec pactl set-sink-volume @DEFAULT_SINK@ -5%
-bindsym XF86AudioMute exec pactl set-sink-mute @DEFAULT_SINK@ toggle
-bindsym XF86AudioMicMute exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
+bindsym XF86AudioRaiseVolume exec pamixer -i 5
+bindsym XF86AudioLowerVolume exec pamixer -d 5
+bindsym XF86AudioMute exec pamixer -t
+bindsym XF86AudioMicMute exec pamixer --default-source -t
 
 # Media player controls
 bindsym XF86AudioPlay exec playerctl play-pause
@@ -321,12 +322,19 @@ bindsym XF86AudioPrev exec playerctl previous
 #
 bar {
     swaybar_command waybar
+    position top
+    #mode hide
+    #modifier control
 }
+
+bindsym $mod+x exec killall -SIGUSR1 .waybar-wrapped
 
 # Application specific
 for_window [class="Spotify"] move to workspace 10
 for_window [class="jetbrains-toolbox"] floating enable
 for_window [class="jetbrains-toolbox"] border none
+
+for_window [app_id="firefox" title="^Picture-in-Picture$"] floating enable, move position 877 450, sticky enable, border none
 
 # border / titlebar
 default_border pixel 1
@@ -351,9 +359,10 @@ for_window [floating] border none
 #for_window [class="Feh"] border pixel 0
 
 exec mako --anchor top-right
-exec gammastep -t 6000:2500
-exec_always wl-paste -w wl-paste >> ~/.clipboard
-#exec wl-paste -t text --watch clipman store
+exec gammastep -t 6500:2500 -l 52.494865:13.353801
+exec flameshot
+exec wl-paste -t text --watch clipman store 
+exec wl-paste -p -t text --watch clipman store -P --histpath="~/.local/share/clipman-primary.json"
 
 # Autohide mouse pointer after
 seat * hide_cursor 4000
