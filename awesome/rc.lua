@@ -6,11 +6,17 @@ pcall(require, "luarocks.loader")
 local gears = require("gears")
 local awful = require("awful")
 require("awful.autofocus")
--- Widget and layout library
-local wibox = require("wibox")
-local battery = require("power_widget")
 -- Theme handling library
 local beautiful = require("beautiful")
+-- Widget and layout library
+local wibox = require("wibox")
+local cpu_widget = require("awesome-wm-widgets.cpu-widget.cpu-widget")
+local volume_widget = require('awesome-wm-widgets.volume-widget.volume')
+local calendar_widget = require("awesome-wm-widgets.calendar-widget.calendar")
+local batteryarc_widget = require("awesome-wm-widgets.batteryarc-widget.batteryarc")
+local fs_widget = require("awesome-wm-widgets.fs-widget.fs-widget")
+local logout_menu_widget = require("awesome-wm-widgets.logout-menu-widget.logout-menu")
+local ram_widget = require("awesome-wm-widgets.ram-widget.ram-widget")
 -- Notification library
 local naughty = require("naughty")
 local menubar = require("menubar")
@@ -126,17 +132,6 @@ mylauncher = awful.widget.launcher({
     menu = mymainmenu
 })
 
---power.warning_config = {
---  percentage = 10,
---  message = "The battery is getting low",
---  preset = {
---    shape = gears.shape.rounded_rect,
---    timeout = 12,
---    bg = "#FFFF00",
---    fg = "#000000",
---  },
---}
-
 -- Menubar configuration
 menubar.utils.terminal = terminal -- Set the terminal for applications that require it
 -- }}}
@@ -150,8 +145,15 @@ end)
 -- {{{ Wibar
 -- Create a textclock widget
 mytextclock = wibox.widget.textclock()
-
-mybattery = battery.get_widget(wibox, "BAT0")
+local cw = calendar_widget({
+    theme = 'dark',
+    placement = 'top_right',
+    radius = 8
+})
+mytextclock:connect_signal("button::press",
+        function(_, _, _, button)
+            if button == 1 then cw.toggle() end
+        end)
 
 -- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(awful.button({}, 1, function(t)
@@ -228,8 +230,14 @@ awful.screen.connect_for_each_screen(function(s)
     set_wallpaper(s)
 
     -- Each screen has its own tag table.
-    local screen_index = s.index
-    awful.tag(my_tags.tags[screen_index].names, s, my_tags.tags[screen_index].layout)
+    if screen:count() > 1 then
+        local screen_index = s.index
+        awful.tag(my_tags.tags[screen_index].names, s, my_tags.tags[screen_index].layout)
+    else
+        for screen_index = 1, table.maxn(my_tags.tags) do
+            awful.tag(my_tags.tags[screen_index].names, s, my_tags.tags[screen_index].layout)
+        end
+    end
 
     -- Create a promptbox for each screen
     --s.mypromptbox = awful.widget.prompt()
@@ -280,10 +288,25 @@ awful.screen.connect_for_each_screen(function(s)
         {
             -- Right widgets
             layout = wibox.layout.fixed.horizontal,
+            spacing = 3,
+
             mykeyboardlayout,
+            cpu_widget(),
+            ram_widget(),
+            fs_widget(),
+            batteryarc_widget({
+                show_current_level = true,
+                show_notification_mode = 'on_click'
+            }),
+            volume_widget({
+                device = 'default'
+            }),
+            logout_menu_widget(),
+            wibox.widget.textbox(" | "),
             wibox.widget.systray(),
-            mybattery,
-	    mytextclock,
+            wibox.widget.textbox(" | "),
+	        mytextclock,
+            wibox.widget.textbox(" | "),
             s.mylayoutbox,
         },
     }
@@ -412,15 +435,12 @@ globalkeys = gears.table.join(awful.key({ modkey, }, "s", hotkeys_popup.show_hel
         { description = "run rofi", group = "launcher" }),
 
     awful.key({ modkey }, "x",
-        function()
-            awful.prompt.run {
-                prompt = "Run Lua code: ",
-                textbox = awful.screen.focused().mypromptbox.widget,
-                exe_callback = awful.util.eval,
-                history_path = awful.util.get_cache_dir() .. "/history_eval"
-            }
-        end,
-        { description = "lua execute prompt", group = "awesome" }),
+            function ()
+                myscreen = awful.screen.focused()
+                myscreen.mywibox.visible = not myscreen.mywibox.visible
+            end,
+            {description = "toggle statusbar"}
+    ),
 
     awful.key({ modkey}, "c", awful.placement.centered),
 
@@ -433,7 +453,7 @@ globalkeys = gears.table.join(awful.key({ modkey, }, "s", hotkeys_popup.show_hel
     -- Lock screen
     awful.key({ modkey, "Control" }, "l", function()
         -- awful.spawn("gdmflexiserver")
-        awful.spawn("xscreensaver-command --lock")
+        awful.spawn("i3lock -n -c 000000")
     end,
         { description = "Lock the screen", group = "screen" }))
 
@@ -604,7 +624,7 @@ globalkeys = gears.table.join(globalkeys,
     awful.key({ }, "XF86AudioMicMute", function ()
         awful.util.spawn("pamixer --default-source -t") end,
 	{ description = "Mute mic", group = "audio" }),
-	
+
     awful.key({ }, "XF86AudioPlay", function ()
         awful.util.spawn("playerctl play-pause") end,
 	{ description = "Audio play-pause", group = "audio" }),
@@ -631,7 +651,7 @@ globalkeys = gears.table.join(globalkeys,
     awful.key({ "Shift" }, "Print", function ()
         awful.util.spawn("gnome-screenshot -i") end,
 	{ description = "Show Gnome screenshot tool gui", group = "screen" }),
-	
+
     awful.key({ modkey, "Control" }, "d", function ()
         awful.util.spawn("xrandr --output DP-2 --off") end,
 	{ description = "Disable laptop screen", group = "screen" }),
@@ -789,6 +809,17 @@ awful.rules.rules = {
         },
         properties = { titlebars_enabled = false }
     },
+    {
+        rule = {
+            class = "jetbrains-.*",
+        }, properties = { focus = true, buttons = clientbuttons_jetbrains }
+    },
+    {
+        rule = {
+            class = "jetbrains-.*",
+            name = "win.*"
+        }, properties = { titlebars_enabled = false, focusable = false, focus = true, floating = true, placement = awful.placement.restore }
+    },
 
     -- Set Firefox to always map on the tag named "2" on screen 1.
     -- { rule = { class = "Firefox" },
@@ -870,6 +901,11 @@ screen.connect_signal("arrange", function (s)
         end
     end
 end)
+
+clientbuttons_jetbrains = gears.table.join(
+        awful.button({ modkey }, 1, awful.mouse.client.move),
+        awful.button({ modkey }, 3, awful.mouse.client.resize)
+)
 
 -- Enable sloppy focus, so that focus follows mouse.
 client.connect_signal("mouse::enter", function(c)

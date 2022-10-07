@@ -62,7 +62,7 @@ bindsym $mod+Ctrl+l exec swaylock -f -c 000000
 ### Input configuration
 #
 #
-  
+
 exec_always swaymsg input "1739:32552:MSFT0001:00_06CB:7F28_Touchpad" {
        dwt enabled
        tap enabled
@@ -144,9 +144,8 @@ bindsym --to-code {
     $mod+r mode "resize"
 
     #$mod+m exec clipman --selector="rofi" -s
-    #$mod+m exec tac ~/.clipboard-history | rofi -dmenu | wl-copy
-    Shift+Alt+v exec clipman pick -t rofi
     #Shift+Alt+v exec tac ~/.clipboard | rofi -dmenu | wl-copy -n
+    Shift+Alt+v exec clipman pick -t rofi --max-items=100
 
     Shift+Alt+p exec rofi-pass
 }
@@ -361,8 +360,8 @@ for_window [floating] border none
 exec mako --anchor top-right
 exec gammastep -t 6500:2500 -l 52.494865:13.353801
 exec flameshot
-exec wl-paste -t text --watch clipman store 
-exec wl-paste -p -t text --watch clipman store -P --histpath="~/.local/share/clipman-primary.json"
+exec wl-paste -t text --watch clipman store --max-items=100
+exec wl-paste -p -t text --watch clipman store --max-items=100 -P --histpath="~/.local/share/clipman-primary.json"
 
 # Autohide mouse pointer after
 seat * hide_cursor 4000
