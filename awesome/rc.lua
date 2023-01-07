@@ -653,7 +653,7 @@ globalkeys = gears.table.join(globalkeys,
 	{ description = "Show Gnome screenshot tool gui", group = "screen" }),
 
     awful.key({ modkey, "Control" }, "d", function ()
-        awful.util.spawn("xrandr --output DP-2 --off") end,
+        awful.util.spawn("xrandr --output eDP-1 --off") end,
 	{ description = "Disable laptop screen", group = "screen" }),
 
     awful.key({ modkey, "Control", "Shift" }, "d", function ()
