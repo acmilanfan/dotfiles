@@ -14,7 +14,7 @@ local themes_path = gfs.get_themes_dir()
 local theme = dofile(themes_path.."default/theme.lua")
 -- load vector assets' generators for this theme
 
-theme.font          = "Roboto Medium 9"
+theme.font          = "Roboto Bold 10"
 
 theme.bg_normal     = xrdb.background
 -- theme.bg_focus      = "#734899"
