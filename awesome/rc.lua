@@ -225,6 +225,62 @@ my_tags = {
     }
 }
 
+local countdown = {
+    widget   = wibox.widget.textbox(),
+    checkbox = wibox.widget {
+        checked      = false,
+        check_color  = beautiful.fg_focus,  -- customize
+        border_color = beautiful.fg_normal, -- customize
+        border_width = 2,                   -- customize
+        shape        = gears.shape.circle,
+        widget       = wibox.widget.checkbox
+    }
+}
+
+function countdown.set()
+--     awful.prompt.run {
+--         prompt       = "Countdown minutes: ", -- floats accepted
+--         textbox      = awful.screen.focused().mypromptbox.widget,
+--         exe_callback = function()
+            countdown.seconds = tonumber("25")
+            if not countdown.seconds then return end
+            countdown.checkbox.checked = false
+            countdown.minute_t = countdown.seconds > 1 and "minutes" or "minute"
+            countdown.seconds = countdown.seconds * 60
+            countdown.timer = gears.timer({ timeout = 1 })
+            countdown.timer:connect_signal("timeout", function()
+                if countdown.seconds > 0 then
+                    local minutes = math.floor(countdown.seconds / 60)
+                    local seconds = math.fmod(countdown.seconds, 60)
+                    countdown.widget:set_markup(string.format("%d:%02d", minutes, seconds))
+                    countdown.seconds = countdown.seconds - 1
+                else
+                    naughty.notify({
+                        title = "Countdown",
+                        text  = string.format("%s %s timeout", timeout, countdown.minute_t)
+                    })
+                    countdown.widget:set_markup("")
+                    countdown.checkbox.checked = true
+                    countdown.timer:stop()
+                end
+            end)
+            countdown.timer:start()
+--         end
+--     }
+end
+
+countdown.checkbox:buttons(awful.util.table.join(
+    awful.button({}, 1, function() countdown.set() end), -- left click
+    awful.button({}, 3, function() -- right click
+        if countdown.timer and countdown.timer.started then
+            countdown.widget:set_markup("")
+            countdown.checkbox.checked = false
+            countdown.timer:stop()
+            naughty.notify({ title = "Countdown", text  = "Timer stopped" })
+        end
+    end)
+))
+
 awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
     set_wallpaper(s)
@@ -240,7 +296,7 @@ awful.screen.connect_for_each_screen(function(s)
     end
 
     -- Create a promptbox for each screen
-    --s.mypromptbox = awful.widget.prompt()
+    s.mypromptbox = awful.widget.prompt()
     -- Create an imagebox widget which will contain an icon indicating which layout we're using.
     -- We need one layoutbox per screen.
     s.mylayoutbox = awful.widget.layoutbox(s)
@@ -289,6 +345,13 @@ awful.screen.connect_for_each_screen(function(s)
             -- Right widgets
             layout = wibox.layout.fixed.horizontal,
             spacing = 3,
+
+            wibox.widget.textbox(" |"),
+
+            countdown.widget,
+            countdown.checkbox,
+
+            wibox.widget.textbox(" | "),
 
             mykeyboardlayout,
             cpu_widget(),
@@ -505,7 +568,13 @@ clientkeys = gears.table.join(awful.key({ modkey, }, "f",
             c.maximized_horizontal = not c.maximized_horizontal
             c:raise()
         end,
-        { description = "(un)maximize horizontally", group = "client" }))
+        { description = "(un)maximize horizontally", group = "client" }),
+    awful.key({ modkey, "Control" }, "s",
+        function(c)
+            c.sticky = not c.sticky
+            c.ontop = not c.ontop
+        end,
+        { description = "sticky and top the current client", group = "client" }))
 
 -- Bind all key numbers to tags.
 -- Be careful: we use keycodes to make it work on any keyboard layout.
