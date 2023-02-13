@@ -11,7 +11,7 @@ local beautiful = require("beautiful")
 -- Widget and layout library
 local wibox = require("wibox")
 local cpu_widget = require("awesome-wm-widgets.cpu-widget.cpu-widget")
-local volume_widget = require('awesome-wm-widgets.volume-widget.volume')
+local volume_widget = require('awesome-wm-widgets.pactl-widget.volume')
 local calendar_widget = require("awesome-wm-widgets.calendar-widget.calendar")
 local batteryarc_widget = require("awesome-wm-widgets.batteryarc-widget.batteryarc")
 local fs_widget = require("awesome-wm-widgets.fs-widget.fs-widget")
@@ -66,7 +66,8 @@ beautiful.init(os.getenv("HOME") .. "/.config/awesome/themes/purple/theme.lua")
 --beautiful.init(gears.filesystem.get_themes_dir() .. "xresources/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
-terminal = "kitty"
+browser = "firefox"
+terminal = "alacritty"
 editor = os.getenv("EDITOR") or "vim"
 editor_cmd = terminal .. " -e " .. editor
 
@@ -281,6 +282,28 @@ countdown.checkbox:buttons(awful.util.table.join(
     end)
 ))
 
+local dnd = wibox.widget {
+    color               = beautiful.bg_normal,
+    border_color        = beautiful.fg_normal,
+    border_width        = 2,
+    shape               = gears.shape.rectangle,
+    check_color         = '#ff0000',
+    check_border_width  = 1,
+    widget              = wibox.widget.checkbox,
+    checked             = false
+}
+
+dnd:buttons {
+    awful.button({}, 1, function()
+        if dnd.checked then
+            naughty.resume()
+        else
+            naughty.suspend()
+        end
+        dnd.checked = not dnd.checked
+    end)
+}
+
 awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
     set_wallpaper(s)
@@ -350,6 +373,7 @@ awful.screen.connect_for_each_screen(function(s)
 
             countdown.widget,
             countdown.checkbox,
+            dnd,
 
             wibox.widget.textbox(" | "),
 
@@ -361,9 +385,7 @@ awful.screen.connect_for_each_screen(function(s)
                 show_current_level = true,
                 show_notification_mode = 'on_click'
             }),
-            volume_widget({
-                device = 'default'
-            }),
+            volume_widget(),
             logout_menu_widget(),
             wibox.widget.textbox(" | "),
             wibox.widget.systray(),
@@ -413,11 +435,11 @@ globalkeys = gears.table.join(awful.key({ modkey, }, "s", hotkeys_popup.show_hel
     awful.key({ modkey, "Shift" }, "j", function()
         awful.client.swap.byidx(1)
     end,
-        { description = "swap with next client by index", group = "client" }),
+        { description = "swap with next screen by index", group = "client" }),
     awful.key({ modkey, "Shift" }, "k", function()
         awful.client.swap.byidx(-1)
     end,
-        { description = "swap with previous client by index", group = "client" }),
+        { description = "swap with previous screen by index", group = "client" }),
     awful.key({ modkey, "Control" }, "j", function()
         awful.screen.focus_relative(1)
     end,
@@ -476,6 +498,7 @@ globalkeys = gears.table.join(awful.key({ modkey, }, "s", hotkeys_popup.show_hel
         awful.layout.inc(1)
     end,
         { description = "select next", group = "layout" }),
+
     awful.key({ modkey, "Shift" }, "space", function()
         awful.layout.inc(-1)
     end,
@@ -497,15 +520,73 @@ globalkeys = gears.table.join(awful.key({ modkey, }, "s", hotkeys_popup.show_hel
     end,
         { description = "run rofi", group = "launcher" }),
 
+    awful.key({ modkey, "Shift" }, "t", function()
+        awful.spawn("rofi -show top -modi top")
+    end,
+        { description = "run rofi top", group = "launcher" }),
+
+    awful.key({ modkey, "Mod1" }, "i", function()
+        awful.spawn("rofi -show emoji -modi emoji")
+    end,
+        { description = "run rofi emoji", group = "launcher" }),
+
+    awful.key({ modkey, "Shift" }, "f", function()
+        awful.spawn(terminal .. " -e lf")
+    end,
+        { description = "launch file manager", group = "launcher" }),
+
+    awful.key({ modkey, "Shift" }, "p", function()
+        awful.spawn("rofi -show power-menu -modi power-menu:rofi-power-menu")
+    end,
+        { description = "launch rofi power-menu", group = "launcher" }),
+
+    awful.key({ modkey, "Shift" }, "i", function()
+        awful.spawn("rofi-pulse-select source")
+    end,
+        { description = "launch rofi pulse select source", group = "launcher" }),
+
+    awful.key({ modkey, "Control" }, "i", function()
+        awful.spawn("rofi-pulse-select sink")
+    end,
+        { description = "launch rofi pulse select input", group = "launcher" }),
+
+    awful.key({ modkey, "Mod1" }, "c", function()
+        awful.spawn("rofi -show calc -modi calc -no-show-match -no-sort")
+    end,
+        { description = "launch rofi calc", group = "launcher" }),
+
+    awful.key({ modkey, "Shift" }, "b", function()
+        awful.spawn("rofi-bluetooth")
+    end,
+        { description = "launch rofi bluetooth", group = "launcher" }),
+
+    awful.key({ modkey, "Shift" }, "s", function()
+        awful.spawn("rofi-systemd")
+    end,
+        { description = "launch rofi systemd", group = "launcher" }),
+
+    awful.key({ modkey }, "b", function()
+        awful.spawn(browser)
+    end,
+        { description = "launch browser", group = "launcher" }),
+
     awful.key({ modkey }, "x",
-            function ()
-                myscreen = awful.screen.focused()
-                myscreen.mywibox.visible = not myscreen.mywibox.visible
-            end,
-            {description = "toggle statusbar"}
+        function ()
+            myscreen = awful.screen.focused()
+            myscreen.mywibox.visible = not myscreen.mywibox.visible
+        end,
+        { description = "toggle statusbar" }
     ),
 
-    awful.key({ modkey}, "c", awful.placement.centered),
+    awful.key({ modkey, "Shift"}, "y", function()
+        naughty.toggle()
+        dnd.checked = not dnd.checked
+    end, { description = "Toggle notifications" }),
+    awful.key({ modkey }, "y", function()
+        naughty.destroy_all_notifications()
+    end, { description = "Destroy notifications" }),
+
+    awful.key({ modkey }, "c", awful.placement.centered),
 
     -- Menubar
     awful.key({ modkey }, "p", function()
@@ -514,8 +595,7 @@ globalkeys = gears.table.join(awful.key({ modkey, }, "s", hotkeys_popup.show_hel
         { description = "show the menubar", group = "launcher" }),
 
     -- Lock screen
-    awful.key({ modkey, "Control" }, "l", function()
-        -- awful.spawn("gdmflexiserver")
+    awful.key({ modkey, "Shift", "Control", "Mod1"}, "l", function()
         awful.spawn("i3lock -n -c 000000")
     end,
         { description = "Lock the screen", group = "screen" }))
@@ -569,6 +649,29 @@ clientkeys = gears.table.join(awful.key({ modkey, }, "f",
             c:raise()
         end,
         { description = "(un)maximize horizontally", group = "client" }),
+
+-- Moving floating windows
+    awful.key({ modkey, "Shift", "Control"}, "j",
+        function(c)
+            c:relative_move(0,  10,   0,   0)
+        end,
+        { description = "Floating Move Down", group = "client"} ),
+    awful.key({ modkey, "Shift", "Control"}, "k",
+        function(c)
+            c:relative_move(0, -10,   0,   0)
+        end,
+        { description = "Floating Move Up", group = "client"} ),
+    awful.key({ modkey, "Shift", "Control"}, "h",
+        function(c)
+            c:relative_move(-10,   0,   0,   0)
+        end,
+        { description = "Floating Move Left", group = "client"} ),
+    awful.key({ modkey, "Shift", "Control"}, "l",
+        function(c)
+            c:relative_move(10,   0,   0,   0)
+        end,
+        { description = "Floating Move Right", group = "client" }),
+
     awful.key({ modkey, "Control" }, "s",
         function(c)
             c.sticky = not c.sticky
