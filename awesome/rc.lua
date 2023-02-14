@@ -70,6 +70,7 @@ browser = "firefox"
 terminal = "alacritty"
 editor = os.getenv("EDITOR") or "vim"
 editor_cmd = terminal .. " -e " .. editor
+laptop_monitor = os.getenv("LAPTOP_MONITOR")
 
 -- Default modkey.
 -- Usually, Mod4 is the key with a logo between Control and Alt.
@@ -825,7 +826,7 @@ globalkeys = gears.table.join(globalkeys,
 	{ description = "Show Gnome screenshot tool gui", group = "screen" }),
 
     awful.key({ modkey, "Control" }, "d", function ()
-        awful.util.spawn("xrandr --output eDP-1 --off") end,
+        awful.util.spawn("xrandr --output " .. laptop_monitor .. " --off") end,
 	{ description = "Disable laptop screen", group = "screen" }),
 
     awful.key({ modkey, "Control", "Shift" }, "d", function ()
