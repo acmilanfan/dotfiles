@@ -294,7 +294,7 @@ local dnd = wibox.widget {
     checked             = false
 }
 
-dnd:buttons {
+dnd:buttons (
     awful.button({}, 1, function()
         if dnd.checked then
             naughty.resume()
@@ -303,7 +303,7 @@ dnd:buttons {
         end
         dnd.checked = not dnd.checked
     end)
-}
+)
 
 awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
@@ -374,6 +374,8 @@ awful.screen.connect_for_each_screen(function(s)
 
             countdown.widget,
             countdown.checkbox,
+
+            wibox.widget.textbox(" "),
             dnd,
 
             wibox.widget.textbox(" | "),
