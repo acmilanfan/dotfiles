@@ -573,6 +573,11 @@ globalkeys = gears.table.join(awful.key({ modkey, }, "s", hotkeys_popup.show_hel
     end,
         { description = "launch browser", group = "launcher" }),
 
+    awful.key({ modkey, "Shift" }, "o", function()
+        awful.spawn(terminal .. " -e vim -c 'lcd ~/org' ./org/index.org")
+    end,
+        { description = "open orgmode index file", group = "launcher" }),
+
     awful.key({ modkey }, "x",
         function ()
             myscreen = awful.screen.focused()
