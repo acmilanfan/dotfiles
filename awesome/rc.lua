@@ -67,7 +67,7 @@ beautiful.init(os.getenv("HOME") .. "/.config/awesome/themes/purple/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
 browser = "firefox"
-terminal = "alacritty"
+terminal = "env WINIT_X11_SCALE_FACTOR=1.3 alacritty"
 editor = os.getenv("EDITOR") or "vim"
 editor_cmd = terminal .. " -e " .. editor
 laptop_monitor = os.getenv("LAPTOP_MONITOR")
@@ -574,7 +574,7 @@ globalkeys = gears.table.join(awful.key({ modkey, }, "s", hotkeys_popup.show_hel
         { description = "launch browser", group = "launcher" }),
 
     awful.key({ modkey, "Shift" }, "o", function()
-        awful.spawn(terminal .. " -o 'window.dimensions.lines=20' -o 'window.dimensions.columns=80' --class orgindex -e vim -c 'lcd ~/org' ./org/index.org")
+        awful.spawn(terminal .. " -o 'window.dimensions.lines=20' -o 'window.dimensions.columns=100' --class orgindex -e vim -c 'lcd ~/org' ./org/index.org")
     end,
         { description = "open orgmode index file", group = "launcher" }),
 
