@@ -574,7 +574,7 @@ globalkeys = gears.table.join(awful.key({ modkey, }, "s", hotkeys_popup.show_hel
         { description = "launch browser", group = "launcher" }),
 
     awful.key({ modkey, "Shift" }, "o", function()
-        awful.spawn(terminal .. " -e vim -c 'lcd ~/org' ./org/index.org")
+        awful.spawn(terminal .. " -o 'window.dimensions.lines=20' -o 'window.dimensions.columns=80' --class orgindex -e vim -c 'lcd ~/org' ./org/index.org")
     end,
         { description = "open orgmode index file", group = "launcher" }),
 
@@ -956,7 +956,8 @@ awful.rules.rules = {
                 "veromix",
                 "xtightvncviewer",
                 "jetbrains-toolbox",
-                "JetBrains Toolbox"
+                "JetBrains Toolbox",
+                "orgindex"
             },
 
             -- Note that the name property shown in xprop might be set slightly after creation of the client
